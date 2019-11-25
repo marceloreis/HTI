@@ -133,11 +133,21 @@ plot_ly(x=~year,y=~mediaPM25,color=~station,colors="Set3",type="scatter") %>% ad
 
 Notamos que as estações Huairou e Dingling apresentam curvas em patamares inferiores às demais, indicando locais com menor concentração, independente do ano, de particulado fino.
 
+Ao longo dos anos 2013 a 2016, a evolução da concentração do particulado PM2.5 pode ser demonstrada conforme o gráfico:
+
+```{r evolucao_particulado2.5_anos,message=FALSE,warning=FALSE}
+ev_poluicao <- dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station) %>% ggplot(aes(data_completa,PM2.5,color=station)) + geom_smooth(se=FALSE) + theme_bw() + scale_color_brewer(palette="Set3")
+ggplotly(ev_poluicao)
+```
+
+A concentração de poluentes apresenta comportamento cíclico, atingindo o auge no início de cada ano (exceto em 2015). O comportamento é esperado, pois os meses de dezembro a fevereiro coincidem com o inverno no hemisfério norte. 
+
 A evolução da concentração do particulado fino PM2.5 pode ser observada também no gráfico horário, que mostra a concentração em sucessivas observações ao longo do dia para cada uma das estações:
 
-```{r evolucao_particulado2.5,message=FALSE,warning=FALSE}
+```{r evolucao_particulado2.5_horario,message=FALSE,warning=FALSE}
 # Opção pelo ggplot convencional.
-dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station,hour,year) %>% summarise(mediaPM25 = mean(PM2.5,na.rm = T)) %>% ggplot(aes(hour,mediaPM25,color=year)) + geom_line() + scale_y_log10() + facet_wrap(station~.) + scale_color_brewer(palette="Dark2")
+dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station,hour,year) %>% summarise(mediaPM25 = mean(PM2.5,na.rm = T)) %>% ggplot(aes(hour,mediaPM25,color=year)) + geom_line(size=1.2) + scale_y_log10() + facet_wrap(station~.) + scale_color_brewer(palette="Dark2") + theme_bw() + theme(legend.position = "bottom")
 ```
 
 O comportamento da concentração de material particulado fino PM2.5 apresenta um padrão em quase todas as estações, com maiores concentrações nos períodos da madrugada e noite (depois das 18h e antes das 5h). Novamente, as estações Dinling e Huairou apresentam comportamento ligeiramente diferente, com diminuição mais gradual das concentrações na manhã e menores concentrações do material.
+
