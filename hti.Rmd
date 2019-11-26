@@ -21,6 +21,7 @@ library(stringr)
 library(plotly)
 library(psych)
 library(GPArotation)
+library(forecast)
 ```
 
 A carga de dados é feita a partir da pasta /PRSA_Data_20130301-20170228, obtida pela descompressão do arquivo fornecido. Uma vez que a estrutura dos arquivos é idêntica, é utilizado um loop que interage com os arquivos CSV disponíveis, carregando todos os dados em um único *data.frame*. O campo *station* diferencia as estações.
