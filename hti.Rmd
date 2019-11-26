@@ -128,19 +128,32 @@ A média anual, conforme a estação, é ilustrada no gráfico seguinte:
 
 ```{r media_particulado2.5,message=FALSE,warning=FALSE}
 dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station,year) %>% summarise(mediaPM25 = sum(PM2.5,na.rm = T)) %>% 
-plot_ly(x=~year,y=~mediaPM25,color=~station,colors="Set3",type="scatter") %>% add_lines() %>% layout(yaxis = list(title = 'Média PM2.5'))
+plot_ly(x=~year,y=~mediaPM25,color=~station,colors="Set3") %>% add_lines() %>% layout(yaxis = list(title = 'Média PM2.5'))
 ```
 
 Notamos que as estações Huairou e Dingling apresentam curvas em patamares inferiores às demais, indicando locais com menor concentração, independente do ano, de particulado fino.
 
-Ao longo dos anos 2013 a 2016, a evolução da concentração do particulado PM2.5 pode ser demonstrada conforme o gráfico:
+Ao longo dos anos 2013 a 2016, a evolução da concentração do particulado PM2.5 pode ser demonstrada conforme os gráficos:
 
 ```{r evolucao_particulado2.5_anos,message=FALSE,warning=FALSE}
-ev_poluicao <- dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station) %>% ggplot(aes(data_completa,PM2.5,color=station)) + geom_smooth(se=FALSE) + theme_bw() + scale_color_brewer(palette="Set3")
-ggplotly(ev_poluicao)
+ev_poluicao1 <- dados_poluicao %>% filter(year <= 2016) %>% ggplot(aes(data_completa,PM2.5)) + geom_smooth(se=FALSE) + theme_bw() + scale_color_brewer(palette="Set3")
+ggplotly(ev_poluicao1)
+
+ev_poluicao2 <- dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% group_by(station) %>% ggplot(aes(data_completa,PM2.5,color=station)) + geom_smooth(se=FALSE) + theme_bw() + scale_color_brewer(palette="Set3")
+ggplotly(ev_poluicao2)
 ```
 
-A concentração de poluentes apresenta comportamento cíclico, atingindo o auge no início de cada ano (exceto em 2015). O comportamento é esperado, pois os meses de dezembro a fevereiro coincidem com o inverno no hemisfério norte. 
+A evolução pode ser interpretada como uma série temporal, conforme o gráfico a seguir. Para a projeção futura, utiliza-se a suavização de Holt-Winters:
+
+```{r evolucao_timeseries}
+evolucao_ts <- dados_poluicao %>% filter(year <= 2016) %>% group_by(year,month) %>% summarise(media_mes = mean(PM2.5,na.rm=TRUE)) %>% ungroup() %>% select(media_mes) %>% ts(frequency = 12,start = c(2013,3)) 
+evolucao_forecast <- HoltWinters(evolucao_ts)
+plot(evolucao_forecast)
+
+autoplot(forecast(evolucao_forecast,h=48))
+```
+
+A concentração de poluentes apresenta comportamento cíclico, atingindo o auge no início de cada ano (exceto em 2015). O comportamento é esperado, pois os meses de dezembro a fevereiro coincidem com o inverno no hemisfério norte, estação em que tradicionalmente a poluição é menos dispersa. Para os anos seguintes, o comportamento esperado é similar ao demonstrado entre 2013 e 2016. 
 
 A evolução da concentração do particulado fino PM2.5 pode ser observada também no gráfico horário, que mostra a concentração em sucessivas observações ao longo do dia para cada uma das estações:
 
@@ -151,3 +164,8 @@ dados_poluicao %>% filter(year <= 2016) %>% mutate(year = as.factor(year)) %>% g
 
 O comportamento da concentração de material particulado fino PM2.5 apresenta um padrão em quase todas as estações, com maiores concentrações nos períodos da madrugada e noite (depois das 18h e antes das 5h). Novamente, as estações Dinling e Huairou apresentam comportamento ligeiramente diferente, com diminuição mais gradual das concentrações na manhã e menores concentrações do material.
 
+# Conclusões
+
+  1. Os sensores podem ser mais simples, efetuando a medição de apenas um tipo de particulado ou de concentrações de gases específicos.
+  2. O material particulado apresenta comportamento sazonal e maior prevalência no inverno, quando atinge níveis preocupantes.
+  3. Duas estações mostraram comportamento diferenciado da concentração do particulado fino PM2.5, devendo proceder-se investigações mais amplas acerca das características locais que impactam na menor poluição atmosférica.
